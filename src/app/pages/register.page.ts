@@ -15,6 +15,7 @@ export class RegisterPage {
   private readonly router = inject(Router);
   readonly busy = signal(false);
   readonly error = signal('');
+  readonly showPassword = signal(false);
   readonly form = this.fb.nonNullable.group({
     name: ['', [Validators.required, Validators.maxLength(255), Validators.pattern(/^\s*\S+(\s+\S+)+\s*$/)]],
     email: ['', [Validators.required, Validators.email, Validators.maxLength(255)]],
@@ -34,4 +35,6 @@ export class RegisterPage {
       },
     });
   }
+
+  togglePassword(): void { this.showPassword.update((visible) => !visible); }
 }

@@ -2,21 +2,20 @@
 <header class="site-header">
   <div class="header-main page-shell">
     <a class="brand" routerLink="/" aria-label="Mercadinho, página inicial">
-      <span class="brand-mark" aria-hidden="true">▤</span>
+      <span class="brand-mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 10h16l-1.2 10H5.2L4 10Z"/><path d="m8 10 4-6 4 6M9 13v4m6-4v4"/></svg></span>
       <span><strong>mercadinho</strong><small>você no coração da gente</small></span>
     </a>
-    <div class="delivery-pill"><span class="pin">⌖</span><span><small>Compra para</small><strong>Seu carrinho, seu ritmo</strong></span></div>
     <nav class="main-nav" aria-label="Navegação principal">
       <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{exact:true}">Comprar</a>
       @if (auth.isAuthenticated()) {
-        <a routerLink="/pedidos" routerLinkActive="active">Meus pedidos</a>
+        <a class="nav-orders" routerLink="/pedidos" routerLinkActive="active">Meus pedidos</a>
         <button class="nav-button" type="button" (click)="signOut()">Sair</button>
       } @else {
-        <a routerLink="/login" routerLinkActive="active">Entrar</a>
-        <a routerLink="/cadastro" routerLinkActive="active">Criar conta</a>
+        <a class="nav-login" routerLink="/login" routerLinkActive="active">Entrar</a>
+        <a class="nav-register" routerLink="/cadastro" routerLinkActive="active">Criar conta</a>
       }
-      <a class="cart-link" routerLink="/carrinho" aria-label="Abrir carrinho">
-        <span aria-hidden="true">▢</span><b>{{ store.cart().itemCount }}</b>
+      <a class="cart-link" routerLink="/carrinho" [attr.aria-label]="'Abrir carrinho, ' + store.cart().itemCount + ' itens'">
+        <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3h2l2.2 11.2a2 2 0 0 0 2 1.6h7.9a2 2 0 0 0 2-1.6L21 8H6"/><circle cx="10" cy="20" r="1"/><circle cx="18" cy="20" r="1"/></svg><b>{{ store.cart().itemCount }}</b>
       </a>
     </nav>
   </div>
@@ -25,11 +24,10 @@
     @for (category of store.categories(); track category.id) {
       <a routerLink="/" [queryParams]="{categoryId: category.id}" fragment="catalogo">{{ category.name }}</a>
     }
-    <span class="category-note">Compra segura e retirada fácil</span>
   </div></div>
 </header>
 <main class="main-content"><router-outlet /></main>
 <footer class="site-footer"><div class="page-shell footer-inner">
-  <a class="brand brand-light" routerLink="/"><span class="brand-mark" aria-hidden="true">▤</span><span><strong>mercadinho</strong><small>você no coração da gente</small></span></a>
+  <a class="brand brand-light" routerLink="/"><span class="brand-mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 10h16l-1.2 10H5.2L4 10Z"/><path d="m8 10 4-6 4 6M9 13v4m6-4v4"/></svg></span><span><strong>mercadinho</strong><small>você no coração da gente</small></span></a>
   <span>Compra simples, do nosso mercado para sua casa.</span><span>© 2026 Mercadinho</span>
 </div></footer>

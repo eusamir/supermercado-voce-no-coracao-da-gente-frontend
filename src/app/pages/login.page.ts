@@ -1,10 +1,11 @@
 import { Component, inject, OnInit, signal } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { FormsModule } from '@angular/forms';
 import { AuthService } from '../core/auth.service';
 
 @Component({
   selector: 'app-login-page',
-  imports: [RouterLink],
+  imports: [RouterLink, FormsModule],
   templateUrl: './login.page.html',
   styleUrl: './auth.page.css',
 })
@@ -16,6 +17,7 @@ export class LoginPage implements OnInit {
   readonly loading = signal(false);
   readonly error = signal('');
   readonly registered = signal(false);
+  email = '';
 
   ngOnInit(): void {
     const params = this.route.snapshot.queryParamMap;
@@ -35,7 +37,15 @@ export class LoginPage implements OnInit {
     }
   }
 
-  login(): void {
-    this.auth.beginLogin(this.route.snapshot.queryParamMap.get('returnUrl') || '/');
+  async login(): Promise<void> {
+    if (this.loading()) return;
+    this.loading.set(true);
+    this.error.set('');
+    try {
+      await this.auth.beginLogin(this.route.snapshot.queryParamMap.get('returnUrl') || '/', this.email);
+    } catch {
+      this.loading.set(false);
+      this.error.set('Não foi possível iniciar o acesso seguro. Verifique se o Keycloak está disponível e tente novamente.');
+    }
   }
 }

@@ -6,8 +6,12 @@
       <div class="auth-content"><p class="eyebrow">QUE BOM VER VOCÊ</p><h2>Entrar na minha conta</h2><p class="muted">Acesse seus pedidos e continue de onde parou.</p>
         @if (registered()) {<div class="success-message" role="status">Conta criada! Agora entre usando o mesmo e-mail e senha no acesso seguro.</div>}
         @if (error()) {<div class="error-message" role="alert">{{ error() }}</div>}
-        <div class="keycloak-note"><span aria-hidden="true">♙</span><div><b>Login protegido pelo Keycloak</b><small>Você será direcionado à tela segura de autenticação.</small></div></div>
-        <button class="button button-primary auth-submit" type="button" (click)="login()">Entrar <span>→</span></button>
+        <form class="login-form" (ngSubmit)="login()">
+          <label for="login-email">E-mail</label>
+          <input id="login-email" name="email" type="email" [(ngModel)]="email" autocomplete="username" required email placeholder="voce&#64;exemplo.com" [disabled]="loading()"/>
+          <div class="keycloak-note"><span aria-hidden="true">♙</span><div><b>Acesso protegido pelo Keycloak</b><small>Na próxima etapa, informe sua senha na tela segura de autenticação.</small></div></div>
+          <button class="button button-primary auth-submit" type="submit" [disabled]="loading()">{{ loading() ? 'Conectando…' : 'Continuar para entrar' }} <span>→</span></button>
+        </form>
         <p class="auth-switch">Ainda não tem uma conta? <a routerLink="/cadastro">Criar agora</a></p>
         <div class="auth-security">♧ <span>Autenticação conectada ao acesso seguro da aplicação.</span></div>
       </div>

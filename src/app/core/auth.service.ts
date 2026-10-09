@@ -28,7 +28,7 @@ export class AuthService {
   readonly isAuthenticated = signal(this.tokenState() !== null);
   private refreshTask: Promise<string | null> | null = null;
 
-  beginLogin(returnUrl = '/'): void {
+  async beginLogin(returnUrl = '/', loginHint = ''): Promise<void> {
     if (!this.browser) return;
     const state = this.randomString(32);
     const nonce = this.randomString(32);
@@ -37,8 +37,8 @@ export class AuthService {
     sessionStorage.setItem(NONCE_KEY, nonce);
     sessionStorage.setItem(VERIFIER_KEY, verifier);
     sessionStorage.setItem(RETURN_KEY, returnUrl.startsWith('/') && !returnUrl.startsWith('//') ? returnUrl : '/');
-    void this.createChallenge(verifier).then((challenge) => {
-      const params = new URLSearchParams({
+    const challenge = await this.createChallenge(verifier);
+    const params = new URLSearchParams({
         client_id: KEYCLOAK_CLIENT_ID,
         redirect_uri: `${location.origin}/login/callback`,
         response_type: 'code',
@@ -47,9 +47,9 @@ export class AuthService {
         nonce,
         code_challenge: challenge,
         code_challenge_method: 'S256',
-      });
-      location.assign(`${KEYCLOAK_URL}/realms/${KEYCLOAK_REALM}/protocol/openid-connect/auth?${params}`);
     });
+    if (loginHint.trim()) params.set('login_hint', loginHint.trim());
+    location.assign(`${KEYCLOAK_URL}/realms/${KEYCLOAK_REALM}/protocol/openid-connect/auth?${params}`);
   }
 
   async finishLogin(code: string, returnedState: string): Promise<string> {
