@@ -12,8 +12,8 @@ export class StoreService {
   readonly categories = signal<{ id: string; name: string }[]>([]);
   private cartRevision = 0;
 
-  products(search = '', categoryId = ''): Observable<ApiPage<Product>> {
-    let params = new HttpParams().set('page', '0').set('size', '100').set('sort', 'name,asc');
+  products(search = '', categoryId = '', page = 0, size = 12): Observable<ApiPage<Product>> {
+    let params = new HttpParams().set('page', page).set('size', size).set('sort', 'name,asc');
     if (search.trim()) params = params.set('search', search.trim());
     if (categoryId) params = params.set('categoryId', categoryId);
     return this.http.get<ApiPage<Product>>(`${API_URL}/api/products`, { params });
@@ -54,8 +54,8 @@ export class StoreService {
     return this.http.delete<Cart>(`${API_URL}/api/cart/items/${productId}`).pipe(tap((cart) => this.setCart(cart)));
   }
   checkout(): Observable<Order> { return this.http.post<Order>(`${API_URL}/api/orders/checkout`, null); }
-  orders(): Observable<ApiPage<OrderSummary>> {
-    const params = new HttpParams().set('page', '0').set('size', '50');
+  orders(page = 0, size = 10): Observable<ApiPage<OrderSummary>> {
+    const params = new HttpParams().set('page', page).set('size', size);
     return this.http.get<ApiPage<OrderSummary>>(`${API_URL}/api/orders`, { params });
   }
   order(id: string): Observable<Order> { return this.http.get<Order>(`${API_URL}/api/orders/${id}`); }

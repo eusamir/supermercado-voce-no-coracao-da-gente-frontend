@@ -15,7 +15,12 @@ export interface Product {
 
 export interface ApiPage<T> {
   content: T[];
-  page?: { size: number; number: number; totalElements: number; totalPages: number };
+  number: number;
+  size: number;
+  totalElements: number;
+  totalPages: number;
+  first: boolean;
+  last: boolean;
 }
 
 export interface CartItem {

@@ -22,6 +22,9 @@ export class CatalogPage implements OnInit {
   readonly error = signal('');
   readonly adding = signal<string | null>(null);
   readonly notice = signal('');
+  readonly page = signal(0);
+  readonly totalPages = signal(0);
+  readonly totalElements = signal(0);
   search = '';
   categoryId = '';
   private loadRequest = 0;
@@ -30,19 +33,24 @@ export class CatalogPage implements OnInit {
     this.route.queryParamMap.subscribe((params) => {
       if (params.has('ofertas')) this.search = '';
       this.categoryId = params.get('categoryId') || '';
-      this.load();
+      this.load(0);
     });
   }
 
-  load(): void {
+  load(pageIndex = 0): void {
+    this.page.set(pageIndex);
     const requestId = ++this.loadRequest;
     this.loading.set(true);
     this.error.set('');
-    this.store.products(this.search, this.categoryId).subscribe({
+    this.store.products(this.search, this.categoryId, pageIndex).subscribe({
       next: (page) => {
         if (requestId !== this.loadRequest) return;
         this.products.set(page.content || []);
+        this.page.set(page.number ?? pageIndex);
+        this.totalPages.set(page.totalPages ?? 0);
+        this.totalElements.set(page.totalElements ?? page.content?.length ?? 0);
         const categories = new Map<string, string>();
+        for (const category of this.categories()) categories.set(category.id, category.name);
         for (const product of page.content || []) categories.set(product.category.id, product.category.name);
         if (!this.categoryId && !this.search.trim()) {
           const available = [...categories].map(([id, name]) => ({ id, name }));
@@ -58,6 +66,13 @@ export class CatalogPage implements OnInit {
       },
     });
   }
+
+  goToPage(pageIndex: number): void {
+    if (pageIndex < 0 || pageIndex >= this.totalPages() || pageIndex === this.page()) return;
+    this.load(pageIndex);
+    document.getElementById('catalogo')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+  pageEnd(): number { return Math.min((this.page() + 1) * 12, this.totalElements()); }
 
   selectCategory(id: string): void {
     this.categoryId = id;
