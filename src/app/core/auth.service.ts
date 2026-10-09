@@ -8,6 +8,7 @@ const VERIFIER_KEY = 'mercadinho.oidc.verifier';
 const STATE_KEY = 'mercadinho.oidc.state';
 const NONCE_KEY = 'mercadinho.oidc.nonce';
 const RETURN_KEY = 'mercadinho.oidc.return';
+const TOKEN_KEY = 'mercadinho.oidc.session';
 
 interface TokenSet {
   access_token: string;
@@ -27,6 +28,30 @@ export class AuthService {
   private readonly tokenState = signal<ActiveTokenSet | null>(null);
   readonly isAuthenticated = signal(this.tokenState() !== null);
   private refreshTask: Promise<string | null> | null = null;
+
+  async restoreSession(): Promise<void> {
+    if (!this.browser) return;
+    try {
+      const saved = sessionStorage.getItem(TOKEN_KEY);
+      if (!saved) return;
+      const token = JSON.parse(saved) as ActiveTokenSet;
+      if (typeof token.access_token !== 'string' || typeof token.id_token !== 'string' || !Number.isFinite(token.savedAt) || !Number.isFinite(token.expires_in)) {
+        this.clear();
+        return;
+      }
+      this.tokenState.set(token);
+      this.isAuthenticated.set(true);
+      if (this.expiresAt(token) <= Date.now() + 60_000) await this.validAccessToken();
+    } catch {
+      this.clear();
+    }
+  }
+
+  displayName(): string {
+    const claims = this.decodePayload(this.tokenState()?.id_token || '');
+    const name = claims?.['name'] || claims?.['given_name'] || claims?.['preferred_username'];
+    return typeof name === 'string' ? name.trim() : '';
+  }
 
   async beginLogin(returnUrl = '/', loginHint = ''): Promise<void> {
     if (!this.browser) return;
@@ -96,7 +121,7 @@ export class AuthService {
         `${KEYCLOAK_URL}/realms/${KEYCLOAK_REALM}/protocol/openid-connect/token`,
         new HttpParams().set('grant_type', 'refresh_token').set('client_id', KEYCLOAK_CLIENT_ID).set('refresh_token', tokens.refresh_token),
       )).then((next) => {
-        this.saveToken({ ...next, id_token: next.id_token || tokens.id_token });
+        this.saveToken({ ...next, id_token: next.id_token || tokens.id_token, refresh_token: next.refresh_token || tokens.refresh_token });
         return next.access_token;
       }).catch(() => {
         this.clear();
@@ -118,11 +143,17 @@ export class AuthService {
     const saved = { ...tokens, savedAt: Date.now() };
     this.tokenState.set(saved);
     this.isAuthenticated.set(true);
+    if (this.browser) {
+      try { sessionStorage.setItem(TOKEN_KEY, JSON.stringify(saved)); } catch { /* Keep the active session in memory if storage is unavailable. */ }
+    }
   }
 
   private clear(): void {
     this.tokenState.set(null);
     this.isAuthenticated.set(false);
+    if (this.browser) {
+      try { sessionStorage.removeItem(TOKEN_KEY); } catch { /* Storage may be unavailable in restricted browser contexts. */ }
+    }
   }
 
   private expiresAt(token: TokenSet & { savedAt?: number }): number {

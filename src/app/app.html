@@ -8,6 +8,7 @@
     <nav class="main-nav" aria-label="Navegação principal">
       <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{exact:true}">Comprar</a>
       @if (auth.isAuthenticated()) {
+        <span class="user-greeting" [title]="'Olá, ' + userName()">Olá, <strong>{{ userName() }}</strong></span>
         <a class="nav-orders" routerLink="/pedidos" routerLinkActive="active">Meus pedidos</a>
         <button class="nav-button" type="button" (click)="signOut()">Sair</button>
       } @else {
