@@ -4,7 +4,7 @@ Data da execução: 09/10/2026. Auditoria somente do ambiente de desenvolvimento
 
 ## Repositórios e serviços
 
-- Frontend: `supermercado-voce-no-coracao-da-gente-frontend` (Angular 22.2.2), neste repositório. Não há Dockerfile nem Compose; as rotas estão vazias e a tela ainda é o placeholder gerado pelo Angular.
+- Frontend: `supermercado-voce-no-coracao-da-gente-frontend` (Angular 22.2.2), neste repositório. Não há Dockerfile nem Compose; catálogo, detalhes, cadastro, login, carrinho, checkout e pedidos são servidos localmente por `ng serve`.
 - Backend: `supermercado-api`, em `Documents/dev/back/supermercado-api`, repositório Git separado, sem alterações locais. Spring Boot 3.5.16 / Java 21. Contém migrations Flyway, catálogo, usuários, carrinho, pedidos, pagamento simulado e configuração do Keycloak.
 - O Compose do backend executa API, PostgreSQL, Keycloak, RabbitMQ e Redis. O projeto `localstack_localstack-docker-desktop-desktop-extension` também estava ativo no host, mas é um Compose independente e não aparece como dependência do e-commerce.
 - Outros repositórios Docker encontrados no diretório de desenvolvimento pertencem a projetos separados; não estão declarados nem conectados à rede `supermercado-api_local_network`.
@@ -23,7 +23,7 @@ Compose: `/Users/samirandrade/Documents/dev/back/supermercado-api/docker-compose
 
 A rede é bridge. A API espera PostgreSQL, RabbitMQ, Keycloak e Redis saudáveis antes de iniciar. Dentro dos containers, as conexões usam os aliases Docker (`postgres:5432`, `rabbitmq:5672`, `keycloak:7080`, `redis:6379`); não usam `localhost` para esses serviços. A URI do emissor OIDC é `http://localhost:7080/realms/supermercado`, que coincide com o `iss` anunciado ao cliente host; o endereço interno de JWK da API usa `keycloak:7080`.
 
-O Compose fornece valores padrão voltados a desenvolvimento para credenciais e aceita substituições por variáveis de ambiente. Os valores não são reproduzidos aqui. O frontend não tem configuração de URL da API nem execução em container neste momento. CORS do backend permite `http://localhost:4200`, origem que corresponde ao servidor Angular de desenvolvimento descrito no README.
+O Compose fornece valores padrão voltados a desenvolvimento para credenciais e aceita substituições por variáveis de ambiente. Os valores não são reproduzidos aqui. O frontend centraliza as URLs em `src/app/core/config.ts` e não roda em container. CORS do backend permite `http://localhost:4200`, origem usada pelo servidor Angular.
 
 ## Comandos e estado observado
 
@@ -35,6 +35,8 @@ Comandos/consultas executados (nenhum deles recriou ou removeu recursos):
 - Consultas `docker exec` somente de leitura: `psql` para histórico Flyway/contagens, `redis-cli ping`, `rabbitmq-diagnostics -q ping`, `rabbitmqctl list_queues` e health endpoint interno do Keycloak.
 - `docker logs --tail 250 supermercado-api` com saída limitada a WARN/ERROR e sanitizada.
 - Requisições HTTP a readiness, catálogo, OIDC, CORS e endpoints autenticados, descritas abaixo.
+- `npm test -- --watch=false`, `npm run build` e `npx ngc -p tsconfig.app.json --noEmit` no repositório frontend.
+- `npm start -- --host 127.0.0.1 --port 4200`; requisições HTTP ao shell SPA, rotas e ilustrações servidas em `localhost:4200`.
 
 | Container | Estado/healthcheck | Reinícios | Observação |
 | --- | --- | ---: | --- |
@@ -55,7 +57,10 @@ URLs do host efetivamente usadas: API `http://localhost:8080`, Keycloak `http://
 | `GET /actuator/health/readiness` | HTTP 200, `{"status":"UP"}`; readiness inclui estado da aplicação, DB e RabbitMQ |
 | `GET /api/products?page=0&size=3` | HTTP 200; resposta paginada com produtos e categoria |
 | `GET /realms/supermercado/.well-known/openid-configuration` no Keycloak | HTTP 200; issuer e token endpoint anunciados em `localhost:7080` |
+| Fluxo de Authorization Code com PKCE no Keycloak | Callback, `state` e `nonce` verificados; troca do código por token HTTP 200 |
+| Token PKCE em `GET /api/users/me` e `GET /api/cart` | HTTP 200 nos dois endpoints |
 | Preflight `OPTIONS /api/products` com origem `http://localhost:4200` | HTTP 200; `Access-Control-Allow-Origin` e métodos esperados |
+| Angular `GET /`, `/carrinho`, `/login` e `/images/carrinho.svg` | HTTP 200; shell SPA e ilustração local servidos |
 | `GET /api/cart` e `GET /api/users/me` sem token | HTTP 401 em ambos |
 | Cadastro de conta isolada de auditoria `POST /api/users` | HTTP 201 |
 | Login no token endpoint OIDC (`supermercado-frontend`) | HTTP 200; token usado apenas nas chamadas seguintes, não registrado |
@@ -69,7 +74,8 @@ O fluxo gravou uma conta e um pedido de teste no banco/Keycloak existentes. Nenh
 ## Limitações e pendências
 
 - Não foi feita inicialização limpa: reconstruir/recriar containers pode interromper o ambiente e o PostgreSQL usa volume persistente existente. Nenhum volume foi removido e `docker compose down -v` não foi executado.
-- Não foram executados `mvn test`, build/testes Angular nem testes de navegador. A API foi validada por requisições reais ao ambiente ativo; o frontend atual ainda é um esqueleto sem telas, serviços HTTP, login ou fluxos de e-commerce para exercitar ponta a ponta pelo navegador.
+- Build de produção Angular passou; 2 testes Angular passaram; `ngc` e `git diff --check` passaram. Não foi executado `mvn test`.
+- Não havia navegador/driver de automação instalado, então não foi possível fazer teste visual automatizado. O servidor Angular, shell de rotas, assets, PKCE e endpoints foram validados por HTTP; o fluxo de carrinho/checkout com pagamento foi exercitado diretamente contra os endpoints reais.
 - Não foram testados recusa de pagamento, estoque insuficiente ou autorização entre dois usuários. O caminho de processamento assíncrono aprovado foi confirmado. Os testes de recusa/estoque exigiriam criar pedidos ou manipular dados adicionais no estado persistente.
 - O Compose fixa credenciais padrão de desenvolvimento quando variáveis de substituição não são fornecidas. Não são credenciais de produção; antes de qualquer uso compartilhado, configurar valores locais protegidos sem incluí-los em commits.
-- Não houve correção de serviço necessária nesta auditoria; por isso, nenhum backend foi alterado. O único arquivo novo é este relatório no repositório frontend.
+- Nenhum arquivo do backend foi alterado nesta implementação do frontend.

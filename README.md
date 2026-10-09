@@ -1,59 +1,35 @@
-# SupermercadoVoceNoCoracaoDaGenteFrontend
+# Mercadinho
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 22.2.2.
+Frontend Angular do e-commerce “Mercadinho — você no coração da gente”. O catálogo, detalhes, cadastro, carrinho, checkout simulado e pedidos usam a API do projeto `supermercado-api`.
 
-## Development server
+## Executar localmente
 
-To start a local development server, run:
-
-```bash
-ng serve
-```
-
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
-
-## Code scaffolding
-
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
+Com a API, o Keycloak, o PostgreSQL, o RabbitMQ e o Redis ativos pelo Compose do backend:
 
 ```bash
-ng generate component component-name
+npm install
+npm start
 ```
 
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
+Abra `http://localhost:4200` (use `localhost`, conforme as origens permitidas no Keycloak e na API). Os endereços locais estão centralizados em `src/app/core/config.ts`: API em `http://localhost:8080`, Keycloak em `http://localhost:7080`, realm `supermercado` e cliente público `supermercado-frontend`.
+
+O login usa Authorization Code com PKCE, `state` e `nonce`. Tokens ficam apenas em memória, são renovados quando necessário e enviados pelo interceptor apenas à API. O cadastro cria a conta pela API e o login ocorre na página segura do Keycloak.
+
+## Fluxos
+
+- Catálogo público, filtros por texto/categoria e detalhes do produto.
+- Cadastro público e autenticação Keycloak.
+- Carrinho autenticado com quantidades validadas pelo estoque.
+- Checkout cria `PAYMENT_PENDING`; a tela acompanha o processamento e apresenta o estado real retornado pela API.
+- Histórico e detalhes consultam somente os pedidos do usuário autenticado.
+
+O backend não fornece imagem nos DTOs de produto; as telas usam ilustrações SVG locais por categoria. O pagamento é simulado pelo backend. O frontend não coleta cartão, endereço ou frete.
+
+## Validar
 
 ```bash
-ng generate --help
+npm test -- --watch=false
+npm run build
 ```
 
-## Building
-
-To build the project run:
-
-```bash
-ng build
-```
-
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
-
-## Running unit tests
-
-To execute unit tests with the [Vitest](https://vitest.dev/) test runner, use the following command:
-
-```bash
-ng test
-```
-
-## Running end-to-end tests
-
-For end-to-end (e2e) testing, run:
-
-```bash
-ng e2e
-```
-
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
-
-## Additional Resources
-
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+Para estado e testes de integração do Compose, consulte [`docs/validacao-docker.md`](docs/validacao-docker.md).
