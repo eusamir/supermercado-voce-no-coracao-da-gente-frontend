@@ -24,10 +24,11 @@ export class StoreService {
   }
   profile(): Observable<UserProfile> { return this.http.get<UserProfile>(`${API_URL}/api/users/me`); }
   /** Fetches the server cart and ignores responses made stale by a later cart mutation. */
+  fetchCart(): Observable<Cart> { return this.http.get<Cart>(`${API_URL}/api/cart`); }
   getCart(): Observable<Cart> {
     return defer(() => {
       const revision = this.cartRevision;
-      return this.http.get<Cart>(`${API_URL}/api/cart`).pipe(tap((cart) => {
+      return this.fetchCart().pipe(tap((cart) => {
         if (revision === this.cartRevision) this.setCart(cart);
       }));
     });

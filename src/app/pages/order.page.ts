@@ -1,7 +1,7 @@
 import { Component, DestroyRef, inject, OnInit, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, RouterLink } from '@angular/router';
-import { catchError, EMPTY, switchMap, takeWhile, timer } from 'rxjs';
+import { catchError, EMPTY, exhaustMap, filter, switchMap, take, takeWhile, timer, timeout } from 'rxjs';
 import { Order } from '../core/models';
 import { StoreService } from '../core/store.service';
 
@@ -32,12 +32,31 @@ export class OrderPage implements OnInit {
       // state, its transaction (including restoring declined items) is committed.
       if (this.isFinal(order) && this.syncedCartForOrder !== order.id) {
         this.syncedCartForOrder = order.id;
-        this.store.getCart().subscribe({
-          next: () => this.cartSyncError.set(''),
-          error: () => this.cartSyncError.set('O status do pedido foi atualizado, mas não conseguimos atualizar o carrinho. Recarregue a página ou abra o carrinho novamente.'),
-        });
+        this.syncCart(order);
       }
     } });
+  }
+  private syncCart(order: Order): void {
+    const isDeclined = order.status === 'PAYMENT_DECLINED';
+    // A declined payment restores cart rows in the backend worker. Keep checking
+    // the real cart endpoint until the order quantities are visible, instead of
+    // treating its first possibly stale/early response as the final cart state.
+    const requests = isDeclined
+      ? timer(0, 1000).pipe(
+          exhaustMap(() => this.store.fetchCart()),
+          filter((cart) => order.items.every((ordered) =>
+            (cart.items.find((item) => item.productId === ordered.productId)?.quantity || 0) >= ordered.quantity)),
+          take(1),
+          timeout({ first: 12000 }),
+        )
+      : this.store.fetchCart().pipe(timeout({ first: 12000 }));
+
+    requests.pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+      next: (cart) => { this.store.setCart(cart); this.cartSyncError.set(''); },
+      error: () => this.cartSyncError.set(isDeclined
+        ? 'O pagamento foi recusado, mas os itens ainda não apareceram no carrinho. Tente atualizar o carrinho; se continuar vazio, a restauração do backend precisa ser verificada.'
+        : 'O status do pedido foi atualizado, mas não conseguimos atualizar o carrinho. Recarregue a página ou abra o carrinho novamente.'),
+    });
   }
   isFinal(order: Order): boolean { return ['PAID','PAYMENT_DECLINED','CANCELLED'].includes(order.status); }
   title(status: string): string { return ({ PAYMENT_PENDING: 'Pagamento em análise', PAID: 'Compra aprovada!', PAYMENT_DECLINED: 'Pagamento não aprovado', CANCELLED: 'Pedido cancelado', CREATED: 'Pedido recebido' } as Record<string,string>)[status] || 'Acompanhamento do pedido'; }
