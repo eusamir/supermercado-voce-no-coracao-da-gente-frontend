@@ -14,6 +14,8 @@ export class OrderPage implements OnInit {
   readonly loading = signal(true);
   readonly error = signal('');
   readonly checking = signal(false);
+  readonly cartSyncError = signal('');
+  private syncedCartForOrder = '';
   ngOnInit(): void {
     const id = this.route.snapshot.paramMap.get('id');
     if (!id) { this.error.set('Não encontramos esse pedido.'); this.loading.set(false); return; }
@@ -21,7 +23,21 @@ export class OrderPage implements OnInit {
       switchMap(() => { this.checking.set(true); return this.store.order(id).pipe(catchError(() => { this.error.set('Não foi possível consultar o pedido. Verifique sua conexão e tente novamente.'); this.loading.set(false); this.checking.set(false); return EMPTY; })); }),
       takeWhile((order) => !this.isFinal(order), true),
       takeUntilDestroyed(this.destroyRef),
-    ).subscribe({ next: (order) => { this.order.set(order); this.error.set(''); this.loading.set(false); this.checking.set(!this.isFinal(order)); } });
+    ).subscribe({ next: (order) => {
+      this.order.set(order);
+      this.error.set('');
+      this.loading.set(false);
+      this.checking.set(!this.isFinal(order));
+      // Payment processing is asynchronous. Once the backend reports a terminal
+      // state, its transaction (including restoring declined items) is committed.
+      if (this.isFinal(order) && this.syncedCartForOrder !== order.id) {
+        this.syncedCartForOrder = order.id;
+        this.store.getCart().subscribe({
+          next: () => this.cartSyncError.set(''),
+          error: () => this.cartSyncError.set('O status do pedido foi atualizado, mas não conseguimos atualizar o carrinho. Recarregue a página ou abra o carrinho novamente.'),
+        });
+      }
+    } });
   }
   isFinal(order: Order): boolean { return ['PAID','PAYMENT_DECLINED','CANCELLED'].includes(order.status); }
   title(status: string): string { return ({ PAYMENT_PENDING: 'Pagamento em análise', PAID: 'Compra aprovada!', PAYMENT_DECLINED: 'Pagamento não aprovado', CANCELLED: 'Pedido cancelado', CREATED: 'Pedido recebido' } as Record<string,string>)[status] || 'Acompanhamento do pedido'; }

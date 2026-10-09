@@ -13,13 +13,13 @@ export class CheckoutPage implements OnInit {
   readonly error = signal('');
   hasUnavailable(): boolean { return !!this.cart()?.items.some((item) => !item.available); }
   ngOnInit(): void {
-    this.store.getCart().subscribe({ next: (cart) => { this.cart.set(cart); this.store.cart.set(cart); this.loading.set(false); }, error: () => { this.error.set('Não foi possível carregar seu carrinho.'); this.loading.set(false); } });
+    this.store.getCart().subscribe({ next: (cart) => { this.cart.set(cart); this.loading.set(false); }, error: () => { this.error.set('Não foi possível carregar seu carrinho.'); this.loading.set(false); } });
   }
   confirm(): void {
     if (this.busy() || !this.cart()?.items.length || this.hasUnavailable()) return;
     this.busy.set(true); this.error.set('');
     this.store.checkout().subscribe({
-      next: (order) => { this.store.cart.set({ id: null, items: [], itemCount: 0, total: 0 }); void this.router.navigate(['/pedidos', order.id]); },
+      next: (order) => { this.store.setCart({ id: null, items: [], itemCount: 0, total: 0 }); void this.router.navigate(['/pedidos', order.id]); },
       error: (err) => { this.busy.set(false); this.error.set(err.status === 409 ? 'O estoque mudou enquanto você comprava. Revise seu carrinho e tente novamente.' : err.status === 400 ? 'O carrinho está vazio ou tem produtos indisponíveis.' : 'Não foi possível criar seu pedido. Seu carrinho continua salvo. Tente novamente.'); },
     });
   }

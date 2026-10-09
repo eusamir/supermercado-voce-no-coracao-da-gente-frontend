@@ -23,7 +23,7 @@ export class App {
         this.store.profile().subscribe({ next: (profile) => this.userName.set(profile.name.trim() || 'cliente'), error: () => undefined });
       } else {
         this.userName.set('');
-        this.store.cart.set({ id: null, items: [], itemCount: 0, total: 0 });
+        this.store.setCart({ id: null, items: [], itemCount: 0, total: 0 });
       }
     });
   }

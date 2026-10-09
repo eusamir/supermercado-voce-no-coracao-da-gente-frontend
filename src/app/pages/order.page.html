@@ -11,6 +11,7 @@
       @if (checking()) { <small class="polling-indicator"><span class="loading-spinner loading-spinner-small" aria-hidden="true"></span>Atualizando status automaticamente…</small> }
     </div>
     @if (error()) { <div class="inline-error" role="status" aria-live="polite">{{ error() }} Vamos tentar consultar novamente em instantes.</div> }
+    @if (cartSyncError()) { <div class="inline-error" role="status" aria-live="polite">{{ cartSyncError() }}</div> }
     <div class="order-detail-grid">
       <section class="checkout-card">
         <div class="detail-section-heading"><h2>Itens do pedido</h2><span>{{ date(item.createdAt) }}</span></div>

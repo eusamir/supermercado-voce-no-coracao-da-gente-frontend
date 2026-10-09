@@ -72,7 +72,7 @@ export class CatalogPage implements OnInit {
     }
     this.adding.set(product.id);
     this.store.addToCart(product.id).subscribe({
-      next: (cart) => { this.store.cart.set(cart); this.adding.set(null); this.notice.set(`${product.name} foi adicionado ao carrinho.`); },
+      next: () => { this.adding.set(null); this.notice.set(`${product.name} foi adicionado ao carrinho.`); },
       error: (err) => { this.adding.set(null); this.notice.set(err.status === 409 ? 'Não há estoque suficiente para essa quantidade.' : 'Não foi possível adicionar este produto. Tente novamente.'); },
     });
   }
