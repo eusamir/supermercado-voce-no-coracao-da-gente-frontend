@@ -430,7 +430,7 @@ Os testes de navegador simulam respostas da API para isolar o comportamento do f
 
 ---
 
-## 8. Estrutura relevante do projeto
+## 9. Estrutura relevante do projeto
 
 ```text
 src/
