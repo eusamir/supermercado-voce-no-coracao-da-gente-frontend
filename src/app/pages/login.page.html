@@ -1,0 +1,16 @@
+<section class="auth-layout page-shell">
+  <div class="auth-art"><p class="eyebrow">UM LUGAR PARA CHAMAR DE SEU</p><h1>Seu caderninho,<br>agora no bolso.</h1><span class="art-line"></span><p>Entre para guardar seus pedidos e tornar as próximas compras ainda mais simples.</p><blockquote>“Aqui ninguém é estranho.”</blockquote></div>
+  <div class="auth-panel">
+    @if (callback() && loading()) {<div class="auth-content"><p class="eyebrow">SÓ UM INSTANTINHO</p><h2>Conectando sua conta</h2><p class="muted">Estamos validando seu acesso com segurança.</p><div class="loading-dots" aria-label="Carregando"></div></div>}
+    @else {
+      <div class="auth-content"><p class="eyebrow">QUE BOM VER VOCÊ</p><h2>Entrar na minha conta</h2><p class="muted">Acesse seus pedidos e continue de onde parou.</p>
+        @if (registered()) {<div class="success-message" role="status">Conta criada! Agora entre usando o mesmo e-mail e senha no acesso seguro.</div>}
+        @if (error()) {<div class="error-message" role="alert">{{ error() }}</div>}
+        <div class="keycloak-note"><span aria-hidden="true">♙</span><div><b>Login protegido pelo Keycloak</b><small>Você será direcionado à tela segura de autenticação.</small></div></div>
+        <button class="button button-primary auth-submit" type="button" (click)="login()">Entrar <span>→</span></button>
+        <p class="auth-switch">Ainda não tem uma conta? <a routerLink="/cadastro">Criar agora</a></p>
+        <div class="auth-security">♧ <span>Autenticação conectada ao acesso seguro da aplicação.</span></div>
+      </div>
+    }
+  </div>
+</section>

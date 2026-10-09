@@ -1,0 +1,17 @@
+<section class="auth-layout page-shell">
+  <div class="auth-art"><p class="eyebrow">BEM-VINDA, BEM-VINDO</p><h1>Seu mercado<br>mais pertinho.</h1><span class="art-line"></span><p>Crie sua conta para acompanhar seus pedidos e montar seu carrinho do seu jeito.</p><blockquote>“Compra boa é compra tranquila.”</blockquote></div>
+  <div class="auth-panel"><div class="auth-content"><p class="eyebrow">VAMOS COMEÇAR</p><h2>Criar minha conta</h2><p class="muted">Leva só um minutinho.</p>
+    @if (error()) {<div class="error-message" role="alert">{{ error() }}</div>}
+    <form [formGroup]="form" (ngSubmit)="submit()" novalidate>
+      <label for="name">Nome completo</label><input id="name" formControlName="name" autocomplete="name" placeholder="Seu nome e sobrenome"/>
+      @if (form.controls.name.touched && form.controls.name.errors) {<small class="field-error">Informe nome e sobrenome.</small>}
+      <label for="email">E-mail</label><input id="email" type="email" formControlName="email" autocomplete="email" placeholder="voce&#64;exemplo.com"/>
+      @if (form.controls.email.touched && form.controls.email.invalid) {<small class="field-error">Digite um e-mail válido.</small>}
+      <label for="password">Senha</label><input id="password" type="password" formControlName="password" autocomplete="new-password" placeholder="Pelo menos 8 caracteres"/>
+      @if (form.controls.password.touched && form.controls.password.invalid) {<small class="field-error">A senha deve ter pelo menos 8 caracteres.</small>}
+      <button class="button button-primary auth-submit" type="submit" [disabled]="busy()">{{ busy() ? 'Criando sua conta…' : 'Criar conta' }} <span>→</span></button>
+    </form>
+    <p class="auth-switch">Já tem uma conta? <a routerLink="/login">Entrar</a></p>
+    <div class="auth-security">♧ <span>Seus dados são protegidos pelo acesso seguro da aplicação.</span></div>
+  </div></div>
+</section>

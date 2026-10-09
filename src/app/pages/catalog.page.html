@@ -1,0 +1,28 @@
+<section class="hero page-shell">
+  <div class="hero-copy"><p class="eyebrow">✳ O MERCADO QUE CONHECE VOCÊ</p>
+    <h1>Do balcão da esquina para a <em>palma da sua mão.</em></h1>
+    <p class="hero-description">Produtos frescos, escolhas simples e o carinho de sempre. Monte seu carrinho com calma — a gente cuida do resto.</p>
+    <div class="hero-actions"><a class="button button-primary" href="#catalogo">Começar compras <span>→</span></a><a class="text-link" routerLink="/pedidos">Acompanhar pedido <span>›</span></a></div>
+    <div class="hero-promises"><span>♧ <b>Compra segura</b><small>Seus dados protegidos</small></span><span>♧ <b>Produtos fresquinhos</b><small>Escolhidos com cuidado</small></span></div>
+  </div>
+  <div class="hero-art"><div class="art-orbit"></div><img src="/images/hortifruti.svg" alt="Ilustração de uma seleção de hortifrúti fresco"><div class="art-note"><span>♡</span><div><b>Feito para você</b><small>Do nosso mercado para sua casa</small></div></div><div class="art-caption"><small>PARA COMEÇAR BEM</small><strong>Frescor em cada escolha</strong></div></div>
+</section>
+<section class="benefit-strip"><div class="page-shell benefits"><div><span>♧</span><p><b>Produtos selecionados</b><small>Qualidade que dá para ver</small></p></div><div><span>◷</span><p><b>Compra sem pressa</b><small>Seu carrinho, seu ritmo</small></p></div><div><span>♡</span><p><b>Estamos por perto</b><small>Ajuda quando precisar</small></p></div></div></section>
+<section id="catalogo" class="catalog-section page-shell">
+  <div class="section-heading"><div><p class="eyebrow">ESCOLHAS DO DIA</p><h2>Encontre seus favoritos</h2><p>Produtos e disponibilidade atualizados direto com a loja.</p></div>
+    <form class="search-form" (ngSubmit)="load()"><label class="sr-only" for="product-search">Buscar produto</label><input id="product-search" name="search" [(ngModel)]="search" placeholder="O que você procura?"/><button type="submit" aria-label="Buscar">⌕</button></form>
+  </div>
+  <div class="category-chips"><button type="button" [class.selected]="!categoryId" (click)="selectCategory('')">Todos</button>@for (category of categories(); track category.id) {<button type="button" [class.selected]="categoryId === category.id" (click)="selectCategory(category.id)">{{ category.name }}</button>}</div>
+  @if (notice()) {<div class="notice" role="status">{{ notice() }}<button type="button" (click)="notice.set('')" aria-label="Fechar">×</button></div>}
+  @if (loading()) {<div class="product-grid">@for (_ of [1,2,3,4,5,6]; track $index) {<div class="product-skeleton" aria-label="Carregando produto"><div></div><span></span><span></span></div>}</div>}
+  @else if (error()) {<div class="state-card"><span class="state-icon">!</span><h3>O catálogo não carregou</h3><p>{{ error() }}</p><button class="button button-primary" type="button" (click)="load()">Tentar novamente</button></div>}
+  @else if (!products().length) {<div class="state-card"><span class="state-icon">⌕</span><h3>Nenhum produto encontrado</h3><p>Tente outro termo ou escolha uma categoria diferente.</p><button class="button button-secondary" type="button" (click)="search=''; categoryId=''; load()">Limpar filtros</button></div>}
+  @else {<div class="product-grid grid gap-5">@for (product of products(); track product.id) {
+    <article class="product-card"><a class="product-art" [routerLink]="['/produto', product.id]"><img [src]="image(product.category.name)" [alt]="'Ilustração de ' + product.category.name"/><span class="stock-badge" [class.out-of-stock]="product.stock < 1">{{ product.stock > 0 ? 'Fresquinho' : 'Indisponível' }}</span></a>
+      <div class="product-info"><p class="product-category">{{ product.category.name }}</p><a class="product-name" [routerLink]="['/produto', product.id]">{{ product.name }}</a><p class="product-description">{{ product.description }}</p>
+        <div class="product-bottom"><div><strong>{{ money(product.price) }}</strong><small>por unidade</small></div><button class="add-button" type="button" [disabled]="product.stock < 1 || adding() === product.id" [attr.aria-label]="'Adicionar ' + product.name" (click)="add(product)">{{ adding() === product.id ? '…' : '+' }}</button></div>
+        <small class="stock-count">{{ product.stock > 0 ? product.stock + ' disponíveis' : 'Sem estoque' }}</small>
+      </div>
+    </article>
+  }</div>}
+</section>
