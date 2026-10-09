@@ -6,12 +6,13 @@
       <span><strong>mercadinho</strong><small>você no coração da gente</small></span>
     </a>
     <nav class="main-nav" aria-label="Navegação principal">
-      <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{exact:true}">Comprar</a>
       @if (auth.isAuthenticated()) {
         <span class="user-greeting" [title]="'Olá, ' + userName()">Olá, <strong>{{ userName() }}</strong></span>
+        <a class="nav-buy" routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{exact:true}">Comprar</a>
         <a class="nav-orders" routerLink="/pedidos" routerLinkActive="active">Meus pedidos</a>
         <button class="nav-button" type="button" (click)="signOut()">Sair</button>
       } @else {
+        <a class="nav-buy" routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{exact:true}">Comprar</a>
         <a class="nav-login" routerLink="/login" routerLinkActive="active">Entrar</a>
         <a class="nav-register" routerLink="/cadastro" routerLinkActive="active">Criar conta</a>
       }
