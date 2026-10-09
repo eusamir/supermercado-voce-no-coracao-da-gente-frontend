@@ -5,6 +5,8 @@
     "ng": "ng",
     "start": "ng serve",
     "build": "ng build",
+    "test:integration": "ng test --watch=false",
+    "test:e2e": "playwright test",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
     "serve:ssr:supermercado-voce-no-coracao-da-gente-frontend": "node dist/supermercado-voce-no-coracao-da-gente-frontend/server/server.mjs"
@@ -28,6 +30,7 @@
     "@angular/build": "^22.2.2",
     "@angular/cli": "^22.2.2",
     "@angular/compiler-cli": "^22.2.0",
+    "@playwright/test": "^1.64.0",
     "@tailwindcss/postcss": "^4.1.12",
     "@types/express": "^5.0.1",
     "@types/node": "^22.12.0",
