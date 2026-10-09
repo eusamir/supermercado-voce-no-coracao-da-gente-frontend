@@ -4,3 +4,8 @@
 .page-shell{min-width:0}.cart-link svg{width:25px;height:25px}
 body{overflow-x:clip}@media(max-width:620px){.main-nav>a.nav-orders{display:none}.main-nav>a.nav-login{display:inline-flex}}
 .brand-mark svg{width:27px;height:27px}
+.page-shell{width:min(1160px,calc(100% - 3rem));margin-inline:auto}
+.eyebrow{color:var(--teal);font-size:.78rem;font-weight:800;letter-spacing:.13em;margin:0 0 1.2rem}
+.button{display:inline-flex;align-items:center;justify-content:center;gap:1rem;border:0;border-radius:9px;padding:.95rem 1.3rem;font-weight:750;cursor:pointer;text-decoration:none;transition:transform .16s,background .16s}
+.button:hover{transform:translateY(-1px)}.button-primary{color:#fff;background:var(--blue)}.button-primary:hover{background:#083b69}.button-primary:disabled{opacity:.55;cursor:not-allowed;transform:none}.button-secondary{background:#fff;color:var(--blue);border:1px solid var(--line)}
+@media(max-width:620px){.page-shell{width:calc(100% - 2rem)}}
