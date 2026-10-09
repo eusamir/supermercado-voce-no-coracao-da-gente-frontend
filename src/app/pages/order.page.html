@@ -1,15 +1,16 @@
 <section class="page-shell commerce-page order-detail-page">
   <a class="back-link" routerLink="/pedidos">← Voltar para meus pedidos</a>
   @if (loading()) {
-    <div class="state-card"><p>Buscando os detalhes do pedido…</p></div>
+    <div class="loading-panel" role="status" aria-live="polite"><span class="loading-spinner" aria-hidden="true"></span><span>Buscando os detalhes do pedido…</span><small>Estamos consultando o status mais recente.</small></div>
   } @else if (error() && !order()) {
     <div class="state-card"><h2>Pedido indisponível</h2><p>{{ error() }}</p><a class="button button-primary" routerLink="/pedidos">Meus pedidos</a></div>
   } @else if (order(); as item) {
     <div class="order-status-card" [class]="'order-status-card ' + item.status.toLowerCase().replaceAll('_','-')">
       <span class="status-symbol">{{ item.status === 'PAID' ? '✓' : item.status === 'PAYMENT_DECLINED' ? '!' : item.status === 'CANCELLED' ? '×' : '◷' }}</span>
       <p class="eyebrow">PEDIDO #{{ item.id.slice(0,8).toUpperCase() }}</p><h1>{{ title(item.status) }}</h1><p>{{ message(item) }}</p>
-      @if (checking()) { <small>Atualizando status do pagamento…</small> }
+      @if (checking()) { <small class="polling-indicator"><span class="loading-spinner loading-spinner-small" aria-hidden="true"></span>Atualizando status automaticamente…</small> }
     </div>
+    @if (error()) { <div class="inline-error" role="status" aria-live="polite">{{ error() }} Vamos tentar consultar novamente em instantes.</div> }
     <div class="order-detail-grid">
       <section class="checkout-card">
         <div class="detail-section-heading"><h2>Itens do pedido</h2><span>{{ date(item.createdAt) }}</span></div>

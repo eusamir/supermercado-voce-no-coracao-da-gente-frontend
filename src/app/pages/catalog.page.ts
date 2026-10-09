@@ -24,6 +24,7 @@ export class CatalogPage implements OnInit {
   readonly notice = signal('');
   search = '';
   categoryId = '';
+  private loadRequest = 0;
 
   ngOnInit(): void {
     this.route.queryParamMap.subscribe((params) => {
@@ -34,10 +35,12 @@ export class CatalogPage implements OnInit {
   }
 
   load(): void {
+    const requestId = ++this.loadRequest;
     this.loading.set(true);
     this.error.set('');
     this.store.products(this.search, this.categoryId).subscribe({
       next: (page) => {
+        if (requestId !== this.loadRequest) return;
         this.products.set(page.content || []);
         const categories = new Map<string, string>();
         for (const product of page.content || []) categories.set(product.category.id, product.category.name);
@@ -49,6 +52,7 @@ export class CatalogPage implements OnInit {
         this.loading.set(false);
       },
       error: () => {
+        if (requestId !== this.loadRequest) return;
         this.error.set('Não conseguimos carregar os produtos agora. Confira sua conexão e tente novamente.');
         this.loading.set(false);
       },

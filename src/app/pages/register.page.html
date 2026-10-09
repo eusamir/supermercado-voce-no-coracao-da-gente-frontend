@@ -9,7 +9,7 @@
       @if (form.controls.email.touched && form.controls.email.invalid) {<small class="field-error">Digite um e-mail válido.</small>}
       <label for="password">Senha</label><div class="password-field"><input id="password" [type]="showPassword() ? 'text' : 'password'" formControlName="password" autocomplete="new-password" placeholder="Pelo menos 8 caracteres"/><button type="button" class="password-toggle" (click)="togglePassword()" [attr.aria-label]="showPassword() ? 'Ocultar senha' : 'Mostrar senha'" [attr.aria-pressed]="showPassword()"><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/>@if (showPassword()) {<path d="m4 4 16 16"/>}</svg></button></div>
       @if (form.controls.password.touched && form.controls.password.invalid) {<small class="field-error">A senha deve ter pelo menos 8 caracteres.</small>}
-      <button class="button button-primary auth-submit" type="submit" [disabled]="busy()">{{ busy() ? 'Criando sua conta…' : 'Criar conta' }} <span>→</span></button>
+      <button class="button button-primary auth-submit" type="submit" [disabled]="busy()">@if (busy()) {<span class="loading-spinner loading-spinner-light" aria-hidden="true"></span>Criando sua conta…} @else {Criar conta <span aria-hidden="true">→</span>}</button>
     </form>
     <p class="auth-switch">Já tem uma conta? <a routerLink="/login">Entrar</a></p>
     <div class="auth-security">♧ <span>Seus dados são protegidos pelo acesso seguro da aplicação.</span></div>
