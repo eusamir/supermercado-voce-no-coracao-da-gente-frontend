@@ -9,6 +9,7 @@ export class StoreService {
   private readonly http = inject(HttpClient);
   readonly cart = signal<Cart>(emptyCart());
   readonly cartBusy = signal(false);
+  readonly categories = signal<{ id: string; name: string }[]>([]);
 
   products(search = '', categoryId = ''): Observable<ApiPage<Product>> {
     let params = new HttpParams().set('page', '0').set('size', '100').set('sort', 'name,asc');

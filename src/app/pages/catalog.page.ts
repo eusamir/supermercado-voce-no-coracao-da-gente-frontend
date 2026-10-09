@@ -28,6 +28,7 @@ export class CatalogPage implements OnInit {
   ngOnInit(): void {
     this.route.queryParamMap.subscribe((params) => {
       if (params.has('ofertas')) this.search = '';
+      this.categoryId = params.get('categoryId') || '';
       this.load();
     });
   }
@@ -40,7 +41,11 @@ export class CatalogPage implements OnInit {
         this.products.set(page.content || []);
         const categories = new Map<string, string>();
         for (const product of page.content || []) categories.set(product.category.id, product.category.name);
-        this.categories.set([...categories].map(([id, name]) => ({ id, name })));
+        if (!this.categoryId && !this.search.trim()) {
+          const available = [...categories].map(([id, name]) => ({ id, name }));
+          this.categories.set(available);
+          this.store.categories.set(available);
+        }
         this.loading.set(false);
       },
       error: () => {
@@ -50,7 +55,10 @@ export class CatalogPage implements OnInit {
     });
   }
 
-  selectCategory(id: string): void { this.categoryId = id; this.load(); }
+  selectCategory(id: string): void {
+    this.categoryId = id;
+    this.router.navigate([], { relativeTo: this.route, queryParams: { categoryId: id || null, ofertas: null }, queryParamsHandling: 'merge' });
+  }
 
   add(product: Product): void {
     if (!this.auth.isAuthenticated()) {

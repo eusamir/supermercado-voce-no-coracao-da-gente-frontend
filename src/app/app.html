@@ -22,8 +22,9 @@
   </div>
   <div class="category-bar"><div class="page-shell category-inner">
     <a routerLink="/" [queryParams]="{ofertas: true}" class="offer-link">Ofertas do dia</a>
-    <a routerLink="/" fragment="catalogo">Hortifrúti</a><a routerLink="/" fragment="catalogo">Padaria</a>
-    <a routerLink="/" fragment="catalogo">Mercearia</a><a routerLink="/" fragment="catalogo">Limpeza</a>
+    @for (category of store.categories(); track category.id) {
+      <a routerLink="/" [queryParams]="{categoryId: category.id}" fragment="catalogo">{{ category.name }}</a>
+    }
     <span class="category-note">Compra segura e retirada fácil</span>
   </div></div>
 </header>
