@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { StoreService } from '../core/store.service';
 import { AuthService } from '../core/auth.service';
 import { Product } from '../core/models';
+import { NotificationService } from '../core/notification.service';
 
 @Component({
   selector: 'app-catalog-page',
@@ -14,6 +15,7 @@ import { Product } from '../core/models';
 export class CatalogPage implements OnInit {
   readonly store = inject(StoreService);
   readonly auth = inject(AuthService);
+  private readonly notification = inject(NotificationService);
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
   readonly products = signal<Product[]>([]);
@@ -21,7 +23,6 @@ export class CatalogPage implements OnInit {
   readonly loading = signal(true);
   readonly error = signal('');
   readonly adding = signal<string | null>(null);
-  readonly notice = signal('');
   readonly page = signal(0);
   readonly totalPages = signal(0);
   readonly totalElements = signal(0);
@@ -81,14 +82,14 @@ export class CatalogPage implements OnInit {
 
   add(product: Product): void {
     if (!this.auth.isAuthenticated()) {
+      this.notification.warning('Entre na sua conta', 'Faça login para adicionar produtos ao carrinho.');
       this.router.navigate(['/login'], { queryParams: { returnUrl: '/' } });
-      this.notice.set('Entre na sua conta para adicionar produtos ao carrinho.');
       return;
     }
     this.adding.set(product.id);
     this.store.addToCart(product.id).subscribe({
-      next: () => { this.adding.set(null); this.notice.set(`${product.name} foi adicionado ao carrinho.`); },
-      error: (err) => { this.adding.set(null); this.notice.set(err.status === 409 ? 'Não há estoque suficiente para essa quantidade.' : 'Não foi possível adicionar este produto. Tente novamente.'); },
+      next: () => { this.adding.set(null); this.notification.success('Adicionado ao carrinho', product.name); },
+      error: (err) => { this.adding.set(null); this.notification.error('Não foi possível adicionar', err.status === 409 ? 'Não há estoque suficiente para essa quantidade.' : 'Tente novamente em instantes.'); },
     });
   }
 
