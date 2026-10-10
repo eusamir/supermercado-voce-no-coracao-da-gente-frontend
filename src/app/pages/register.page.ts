@@ -1,7 +1,14 @@
 import { Component, inject, signal } from '@angular/core';
-import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { AbstractControl, FormBuilder, ReactiveFormsModule, ValidationErrors, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { StoreService } from '../core/store.service';
+
+function matchingEmails(control: AbstractControl): ValidationErrors | null {
+  const email = String(control.get('email')?.value || '').trim().toLocaleLowerCase('pt-BR');
+  const confirmation = String(control.get('confirmEmail')?.value || '').trim().toLocaleLowerCase('pt-BR');
+  if (!email || !confirmation || control.get('email')?.invalid || control.get('confirmEmail')?.invalid) return null;
+  return email === confirmation ? null : { emailMismatch: true };
+}
 
 @Component({
   selector: 'app-register-page',
@@ -19,15 +26,17 @@ export class RegisterPage {
   readonly form = this.fb.nonNullable.group({
     name: ['', [Validators.required, Validators.maxLength(255), Validators.pattern(/^\s*\S+(\s+\S+)+\s*$/)]],
     email: ['', [Validators.required, Validators.email, Validators.maxLength(255)]],
+    confirmEmail: ['', [Validators.required, Validators.email, Validators.maxLength(255)]],
     password: ['', [Validators.required, Validators.minLength(8), Validators.maxLength(128)]],
-  });
+  }, { validators: matchingEmails });
 
   submit(): void {
     this.form.markAllAsTouched();
     if (this.form.invalid || this.busy()) return;
     this.busy.set(true);
     this.error.set('');
-    this.store.register(this.form.getRawValue()).subscribe({
+    const { name, email, password } = this.form.getRawValue();
+    this.store.register({ name, email, password }).subscribe({
       next: () => { void this.router.navigate(['/login'], { queryParams: { registered: 'true' } }); },
       error: (err) => {
         this.busy.set(false);
